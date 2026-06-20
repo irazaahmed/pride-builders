@@ -11,6 +11,12 @@ export default async function NewBookingPage() {
     prisma.user.findMany({
       where: { role: "CUSTOMER" },
       orderBy: { name: "asc" },
+      include: {
+        bookings: {
+          where: { status: "ACTIVE" },
+          include: { flat: true },
+        },
+      },
     }),
   ]);
 
@@ -27,13 +33,15 @@ export default async function NewBookingPage() {
     id: c.id,
     name: c.name,
     email: c.email,
+    flatLabel:
+      c.bookings.length > 0 ? c.bookings.map((b) => b.flat.flatNumber).join(", ") : null,
   }));
 
   return (
     <div className="p-8">
-      <h1 className="text-2xl font-semibold">Nayi Booking</h1>
+      <h1 className="text-2xl font-semibold">New Booking</h1>
       <p className="mt-1 text-muted-foreground">
-        Flat, customer aur deal terms select karein, phir installment plan ka preview dekhein.
+        Select the flat, customer, and deal terms, then preview the installment plan.
       </p>
       <div className="mt-6">
         <BookingWizard flats={flatOptions} customers={customerOptions} />

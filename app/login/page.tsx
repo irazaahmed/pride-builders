@@ -22,7 +22,7 @@ export default async function LoginPage() {
       <Card className="w-full max-w-sm">
         <CardHeader>
           <CardTitle className="text-xl">{BRAND_NAME}</CardTitle>
-          <CardDescription>Apne account mein login karein</CardDescription>
+          <CardDescription>Log in to your account</CardDescription>
         </CardHeader>
         <CardContent>
           <LoginForm />

@@ -42,7 +42,7 @@ export function BookingFilters({
           <SelectValue placeholder="Status" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value={ALL}>Sab Status</SelectItem>
+          <SelectItem value={ALL}>All Statuses</SelectItem>
           <SelectItem value="ACTIVE">Active</SelectItem>
           <SelectItem value="COMPLETED">Completed</SelectItem>
           <SelectItem value="CANCELLED">Cancelled</SelectItem>
@@ -57,7 +57,7 @@ export function BookingFilters({
           <SelectValue placeholder="Project" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value={ALL}>Sab Projects</SelectItem>
+          <SelectItem value={ALL}>All Projects</SelectItem>
           {projects.map((p) => (
             <SelectItem key={p.id} value={p.id}>
               {p.name}
@@ -74,7 +74,7 @@ export function BookingFilters({
           <SelectValue placeholder="Customer" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value={ALL}>Sab Customers</SelectItem>
+          <SelectItem value={ALL}>All Customers</SelectItem>
           {customers.map((c) => (
             <SelectItem key={c.id} value={c.id}>
               {c.name}

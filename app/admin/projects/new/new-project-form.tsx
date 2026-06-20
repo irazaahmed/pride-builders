@@ -12,7 +12,7 @@ export function NewProjectForm() {
   return (
     <form action={formAction} className="flex max-w-sm flex-col gap-4">
       <div className="flex flex-col gap-2">
-        <Label htmlFor="name">Project ka naam</Label>
+        <Label htmlFor="name">Project name</Label>
         <Input id="name" name="name" required placeholder="e.g. Pride Heights" />
       </div>
       <div className="flex flex-col gap-2">

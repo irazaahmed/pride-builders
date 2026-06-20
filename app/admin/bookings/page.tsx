@@ -41,7 +41,7 @@ export default async function AdminBookingsPage({
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Bookings</h1>
         <Link href="/admin/bookings/new" className={cn(buttonVariants())}>
-          Nayi Booking
+          New Booking
         </Link>
       </div>
       <div className="mt-4">

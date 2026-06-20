@@ -23,7 +23,7 @@ export default async function AdminProjectsPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Projects</h1>
         <Link href="/admin/projects/new" className={cn(buttonVariants())}>
-          Naya Project
+          New Project
         </Link>
       </div>
       <div className="mt-6">

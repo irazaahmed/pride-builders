@@ -93,7 +93,7 @@ export function ProjectsTable({ data }: { data: ProjectRow[] }) {
                 colSpan={columns.length}
                 className="h-24 text-center text-muted-foreground"
               >
-                Koi project nahi mila.
+                No projects found.
               </TableCell>
             </TableRow>
           )}

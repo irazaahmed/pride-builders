@@ -38,6 +38,8 @@ export interface CustomerOption {
   id: string;
   name: string;
   email: string;
+  /** The flat they currently hold, if any (e.g. "Dummy Pride 101") - helps tell apart customers who share a name. */
+  flatLabel?: string | null;
 }
 
 interface ScheduleRow {
@@ -137,11 +139,11 @@ export function BookingWizard({
     setGenError(null);
 
     if (!flatId) {
-      setGenError("Flat select karein.");
+      setGenError("Please select a flat.");
       return;
     }
     if (!customerSelectValue || customerSelectValue === NEW_CUSTOMER) {
-      setGenError("Customer select karein ya naya customer banayein.");
+      setGenError("Please select a customer or create a new one.");
       return;
     }
 
@@ -195,12 +197,12 @@ export function BookingWizard({
             }}
           >
             <SelectTrigger className="w-full">
-              <SelectValue placeholder="Available flat choose karein" />
+              <SelectValue placeholder="Choose an available flat" />
             </SelectTrigger>
             <SelectContent>
               {flats.map((f) => (
                 <SelectItem key={f.id} value={f.id}>
-                  {f.projectName} &middot; {f.flatNumber} &middot; {f.type} &middot; Rs{" "}
+                  {f.projectName} - {f.flatNumber} - {f.type} - Rs{" "}
                   {f.basePrice.toLocaleString()}
                 </SelectItem>
               ))}
@@ -217,22 +219,22 @@ export function BookingWizard({
             }}
           >
             <SelectTrigger className="w-full">
-              <SelectValue placeholder="Customer choose karein" />
+              <SelectValue placeholder="Choose a customer" />
             </SelectTrigger>
             <SelectContent>
               {allCustomers.map((c) => (
                 <SelectItem key={c.id} value={c.id}>
-                  {c.name} ({c.email})
+                  {c.name} ({c.email}){c.flatLabel ? ` - Flat ${c.flatLabel}` : ""}
                 </SelectItem>
               ))}
-              <SelectItem value={NEW_CUSTOMER}>+ Naya Customer Banayein</SelectItem>
+              <SelectItem value={NEW_CUSTOMER}>+ Create New Customer</SelectItem>
             </SelectContent>
           </Select>
 
           {customerSelectValue === NEW_CUSTOMER && (
             <div className="mt-2 flex flex-col gap-3 rounded-md border p-4">
               <Input
-                placeholder="Naam"
+                placeholder="Name"
                 value={newCustomer.name}
                 onChange={(e) => setNewCustomer((p) => ({ ...p, name: e.target.value }))}
               />
@@ -255,7 +257,7 @@ export function BookingWizard({
               />
               {customerError && <p className="text-sm text-destructive">{customerError}</p>}
               <Button type="button" onClick={handleCreateCustomer} disabled={creatingCustomer}>
-                {creatingCustomer ? "Banaya ja raha hai..." : "Customer Banayein"}
+                {creatingCustomer ? "Creating..." : "Create Customer"}
               </Button>
             </div>
           )}
@@ -311,26 +313,31 @@ export function BookingWizard({
           </div>
           {planType === "HYBRID" && (
             <div className="flex flex-col gap-2">
-              <Label>Pehle kitni half-yearly installments?</Label>
+              <Label>Number of half-yearly installments (every 6 months)</Label>
               <Input
                 type="number"
                 min={0}
                 value={hybridHalfYearlyCount}
                 onChange={(e) => setHybridHalfYearlyCount(e.target.value)}
               />
+              <p className="text-xs text-muted-foreground">
+                Monthly installments run from month 1 throughout the full duration. Every
+                6th month gets a half-yearly installment instead of that month&apos;s
+                monthly one - everything else stays monthly in parallel.
+              </p>
             </div>
           )}
         </div>
 
         <p className="text-sm text-muted-foreground">
-          Remaining amount (advance ke baad): Rs {remainingAmount.toLocaleString()}
+          Remaining amount (after advance): Rs {remainingAmount.toLocaleString()}
         </p>
 
         {genError && <p className="text-sm text-destructive">{genError}</p>}
 
         <div>
           <Button type="button" onClick={handleGeneratePreview} disabled={generating}>
-            {generating ? "Generate ho raha hai..." : "Generate Preview"}
+            {generating ? "Generating..." : "Generate Preview"}
           </Button>
         </div>
       </div>
@@ -346,9 +353,9 @@ export function BookingWizard({
         </p>
         <p>
           <span className="text-muted-foreground">Total:</span> Rs{" "}
-          {Number(totalPrice).toLocaleString()} &middot;{" "}
+          {Number(totalPrice).toLocaleString()} -{" "}
           <span className="text-muted-foreground">Advance:</span> Rs{" "}
-          {Number(advanceAmount).toLocaleString()} &middot;{" "}
+          {Number(advanceAmount).toLocaleString()} -{" "}
           <span className="text-muted-foreground">Remaining:</span> Rs{" "}
           {remainingAmount.toLocaleString()}
         </p>
@@ -389,8 +396,8 @@ export function BookingWizard({
       </div>
 
       <p className={sumMatches ? "text-sm text-emerald-700" : "text-sm text-destructive"}>
-        Installments ka total: Rs {previewSum.toLocaleString()} / Rs{" "}
-        {remainingAmount.toLocaleString()} {sumMatches ? "(theek hai)" : "(barabar nahi hai)"}
+        Installments total: Rs {previewSum.toLocaleString()} / Rs{" "}
+        {remainingAmount.toLocaleString()} {sumMatches ? "(matches)" : "(does not match)"}
       </p>
 
       <form action={formAction} className="flex items-center gap-3">
@@ -412,7 +419,7 @@ export function BookingWizard({
           Back
         </Button>
         <Button type="submit" disabled={isSaving}>
-          {isSaving ? "Save ho raha hai..." : "Confirm & Save Booking"}
+          {isSaving ? "Saving..." : "Confirm & Save Booking"}
         </Button>
         {saveError && <p className="text-sm text-destructive">{saveError}</p>}
       </form>

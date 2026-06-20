@@ -10,6 +10,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { syncOverdueInstallments } from "@/lib/installment-sync";
+import { roundCurrency } from "@/lib/installment-engine";
+import { RecordPaymentDialog } from "./record-payment-dialog";
 
 export default async function BookingDetailPage({
   params,
@@ -17,6 +20,8 @@ export default async function BookingDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+
+  await syncOverdueInstallments();
 
   const booking = await prisma.booking.findUnique({
     where: { id },
@@ -83,6 +88,7 @@ export default async function BookingDetailPage({
               <TableHead>Amount</TableHead>
               <TableHead>Paid</TableHead>
               <TableHead>Status</TableHead>
+              <TableHead>Payment</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -94,6 +100,14 @@ export default async function BookingDetailPage({
                 <TableCell>Rs {i.paidAmount.toLocaleString()}</TableCell>
                 <TableCell>
                   <Badge variant="outline">{i.status}</Badge>
+                </TableCell>
+                <TableCell>
+                  {i.status !== "PAID" && (
+                    <RecordPaymentDialog
+                      installmentId={i.id}
+                      remainingDue={roundCurrency(i.amount - i.paidAmount)}
+                    />
+                  )}
                 </TableCell>
               </TableRow>
             ))}

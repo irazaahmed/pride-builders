@@ -8,8 +8,8 @@ import { generateFlats } from "@/lib/flat-generator";
 import { FlatType } from "@/app/generated/prisma/client";
 
 const createProjectSchema = z.object({
-  name: z.string().min(1, "Project ka naam likhain."),
-  totalFloors: z.coerce.number().int().min(1, "Kam az kam 1 floor honi chahiye.").max(200),
+  name: z.string().min(1, "Please enter a project name."),
+  totalFloors: z.coerce.number().int().min(1, "There must be at least 1 floor.").max(200),
 });
 
 export async function createProjectAction(
@@ -42,7 +42,7 @@ const compositionRowSchema = z.object({
 
 const generateFlatsSchema = z.object({
   projectId: z.string().min(1),
-  composition: z.array(compositionRowSchema).min(1, "Kam az kam ek flat type add karein."),
+  composition: z.array(compositionRowSchema).min(1, "Please add at least one flat type."),
 });
 
 export async function generateFlatsAction(
@@ -56,7 +56,7 @@ export async function generateFlatsAction(
     const raw = formData.get("composition");
     compositionJson = JSON.parse(typeof raw === "string" ? raw : "[]");
   } catch {
-    return "Flat structure ka format ghalat hai.";
+    return "Invalid flat structure format.";
   }
 
   const parsed = generateFlatsSchema.safeParse({
@@ -74,11 +74,11 @@ export async function generateFlatsAction(
   });
 
   if (!project) {
-    return "Project nahi mila.";
+    return "Project not found.";
   }
 
   if (project._count.flats > 0) {
-    return "Is project ke flats pehle hi generate ho chuke hain.";
+    return "Flats have already been generated for this project.";
   }
 
   const generated = generateFlats(project.totalFloors, parsed.data.composition);

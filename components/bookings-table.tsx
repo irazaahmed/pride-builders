@@ -96,7 +96,7 @@ export function BookingsTable({ data }: { data: BookingRow[] }) {
                 colSpan={columns.length}
                 className="h-24 text-center text-muted-foreground"
               >
-                Koi booking nahi mili.
+                No bookings found.
               </TableCell>
             </TableRow>
           )}

@@ -55,7 +55,7 @@ export function FlatCompositionForm({ projectId }: { projectId: string }) {
       <input type="hidden" name="composition" value={compositionJson} />
 
       <p className="text-sm text-muted-foreground">
-        Yeh flat structure har floor par repeat hoga.
+        This flat structure will repeat on every floor.
       </p>
 
       {rows.map((row, index) => (
@@ -110,7 +110,7 @@ export function FlatCompositionForm({ projectId }: { projectId: string }) {
 
       <div>
         <Button type="button" variant="outline" onClick={addRow}>
-          + Flat type add karein
+          + Add flat type
         </Button>
       </div>
 
@@ -118,7 +118,7 @@ export function FlatCompositionForm({ projectId }: { projectId: string }) {
 
       <div>
         <Button type="submit" disabled={isPending}>
-          {isPending ? "Generating..." : "Flats Generate Karein"}
+          {isPending ? "Generating..." : "Generate Flats"}
         </Button>
       </div>
     </form>

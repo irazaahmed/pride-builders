@@ -27,7 +27,7 @@ export default async function ProjectDetailPage({
         <Badge variant="outline">{project.status}</Badge>
       </div>
       <p className="mt-1 text-muted-foreground">
-        {project.totalFloors} floors &middot; {project.flats.length} flats
+        {project.totalFloors} floors - {project.flats.length} flats
       </p>
 
       <div className="mt-8">

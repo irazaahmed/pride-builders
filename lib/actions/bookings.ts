@@ -17,15 +17,15 @@ import {
 
 const dealTermsSchema = z
   .object({
-    totalPrice: z.coerce.number().positive("Total price likhain."),
-    advanceAmount: z.coerce.number().min(0, "Advance amount likhain."),
+    totalPrice: z.coerce.number().positive("Please enter the total price."),
+    advanceAmount: z.coerce.number().min(0, "Please enter the advance amount."),
     planType: z.enum(PlanType),
-    durationMonths: z.coerce.number().int().min(1, "Duration kam az kam 1 month."),
+    durationMonths: z.coerce.number().int().min(1, "Duration must be at least 1 month."),
     bookingDate: z.coerce.date(),
     hybridHalfYearlyCount: z.coerce.number().int().min(0).optional(),
   })
   .refine((d) => d.advanceAmount <= d.totalPrice, {
-    message: "Advance, total price se zyada nahi ho sakta.",
+    message: "Advance cannot be more than the total price.",
     path: ["advanceAmount"],
   })
   .refine(
@@ -34,7 +34,7 @@ const dealTermsSchema = z
       return (d.hybridHalfYearlyCount ?? 0) * 6 <= d.durationMonths;
     },
     {
-      message: "Half-yearly installments ki tadaad duration se zyada nahi ho sakti.",
+      message: "The number of half-yearly installments cannot exceed the duration.",
       path: ["hybridHalfYearlyCount"],
     }
   );
@@ -82,7 +82,7 @@ export async function createBookingAction(
     const raw = formData.get("installments");
     installmentsJson = JSON.parse(typeof raw === "string" ? raw : "[]");
   } catch {
-    return "Installment data ka format ghalat hai.";
+    return "Invalid installment data format.";
   }
 
   const parsed = createBookingSchema.safeParse({
@@ -115,15 +115,15 @@ export async function createBookingAction(
   const remainingAmount = roundCurrency(totalPrice - advanceAmount);
 
   if (!validateInstallmentSum(remainingAmount, installments)) {
-    return `Installments ka total Rs ${remainingAmount.toLocaleString()} ke barabar hona chahiye.`;
+    return `Installments must add up to Rs ${remainingAmount.toLocaleString()}.`;
   }
 
   const flat = await prisma.flat.findUnique({ where: { id: flatId } });
   if (!flat) {
-    return "Flat nahi mila.";
+    return "Flat not found.";
   }
   if (flat.status !== "AVAILABLE") {
-    return "Yeh flat ab available nahi hai.";
+    return "This flat is no longer available.";
   }
 
   const booking = await prisma.$transaction(async (tx) => {

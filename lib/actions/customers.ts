@@ -6,10 +6,10 @@ import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth-helpers";
 
 const createCustomerSchema = z.object({
-  name: z.string().min(1, "Naam likhain."),
-  email: z.string().email("Sahi email likhain."),
+  name: z.string().min(1, "Please enter a name."),
+  email: z.string().email("Please enter a valid email."),
   phone: z.string().optional(),
-  password: z.string().min(6, "Password kam az kam 6 characters ka ho."),
+  password: z.string().min(6, "Password must be at least 6 characters."),
 });
 
 export async function createCustomerInlineAction(input: {
@@ -32,7 +32,7 @@ export async function createCustomerInlineAction(input: {
     where: { email: parsed.data.email },
   });
   if (existing) {
-    return { error: "Is email se pehle hi account mojood hai." };
+    return { error: "An account with this email already exists." };
   }
 
   const hashedPassword = await bcrypt.hash(parsed.data.password, 10);

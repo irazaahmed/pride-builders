@@ -21,7 +21,11 @@ export interface GenerateScheduleInput {
   planType: PlanType;
   durationMonths: number;
   bookingDate: Date;
-  /** Required when planType is HYBRID: how many half-yearly installments come first. */
+  /**
+   * Required when planType is HYBRID: how many half-yearly installments occur
+   * (every 6th month) in parallel with the monthly installments running for the
+   * rest of the duration.
+   */
   hybridHalfYearlyCount?: number;
 }
 
@@ -97,34 +101,49 @@ export function generateInstallmentSchedule(
     ];
   }
 
-  // HYBRID: a fixed number of half-yearly installments first, then monthly for the rest.
-  // Both groups share the same underlying monthly rate (remainingAmount / durationMonths)
-  // so a half-yearly installment is simply 6x a monthly one.
+  // HYBRID: monthly installments run every month starting the month after booking,
+  // in parallel with half-yearly installments every 6 months. A month that lands on
+  // a half-yearly due date gets ONLY the half-yearly installment that month, not both.
+  //
+  // A half-yearly installment is worth 6x a monthly one, so with H half-yearly months
+  // and M = durationMonths - H monthly months, the total "weight" is 6H + M, i.e.
+  // durationMonths + 5H. Solving weight * monthlyAmount = remainingAmount keeps the
+  // total exact even though half-yearly months don't also carry a monthly payment.
   const halfYearlyCount = input.hybridHalfYearlyCount ?? 0;
-  const halfYearlyMonths = halfYearlyCount * 6;
-  const monthlyCount = Math.max(0, durationMonths - halfYearlyMonths);
-  const monthlyUnit = durationMonths > 0 ? remainingAmount / durationMonths : 0;
-  const halfYearlyAmount = roundCurrency(monthlyUnit * 6 * halfYearlyCount);
-  const monthlyAmount = roundCurrency(remainingAmount - halfYearlyAmount);
-
-  const halfYearlyInstallments = distribute(
-    halfYearlyAmount,
-    halfYearlyCount,
-    6,
-    bookingDate,
-    0,
-    "HALF_YEARLY"
-  );
-  const monthlyInstallments = distribute(
-    monthlyAmount,
-    monthlyCount,
-    1,
-    bookingDate,
-    halfYearlyMonths,
-    "MONTHLY"
+  const halfYearlyMonthSet = new Set(
+    Array.from({ length: halfYearlyCount }, (_, i) => (i + 1) * 6)
   );
 
-  return [advance, ...halfYearlyInstallments, ...monthlyInstallments];
+  const totalWeight = durationMonths + 5 * halfYearlyCount;
+  const monthlyAmount = totalWeight > 0 ? remainingAmount / totalWeight : 0;
+  const halfYearlyAmount = monthlyAmount * 6;
+
+  const slots: { month: number; type: InstallmentType; amount: number }[] = [];
+  for (let month = 1; month <= durationMonths; month++) {
+    if (halfYearlyMonthSet.has(month)) {
+      slots.push({ month, type: "HALF_YEARLY", amount: roundCurrency(halfYearlyAmount) });
+    } else {
+      slots.push({ month, type: "MONTHLY", amount: roundCurrency(monthlyAmount) });
+    }
+  }
+
+  if (slots.length > 0) {
+    const allocated = slots
+      .slice(0, -1)
+      .reduce((acc, s) => roundCurrency(acc + s.amount), 0);
+    slots[slots.length - 1].amount = roundCurrency(remainingAmount - allocated);
+  }
+
+  const hybridInstallments: DraftInstallment[] = slots.map((s) => ({
+    type: s.type,
+    status: "PENDING",
+    dueDate: addMonths(bookingDate, s.month),
+    amount: s.amount,
+    paidAmount: 0,
+    paidDate: null,
+  }));
+
+  return [advance, ...hybridInstallments];
 }
 
 export function sumNonAdvanceInstallments(

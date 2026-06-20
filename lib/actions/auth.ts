@@ -9,7 +9,7 @@ export async function loginAction(_prevState: string | undefined, formData: Form
   const password = formData.get("password");
 
   if (typeof email !== "string" || typeof password !== "string") {
-    return "Email aur password darj karein.";
+    return "Please enter your email and password.";
   }
 
   const user = await prisma.user.findUnique({ where: { email } });
@@ -19,7 +19,7 @@ export async function loginAction(_prevState: string | undefined, formData: Form
     await signIn("credentials", { email, password, redirectTo });
   } catch (error) {
     if (error instanceof AuthError) {
-      return "Email ya password ghalat hai.";
+      return "Incorrect email or password.";
     }
     throw error;
   }
