@@ -1,0 +1,116 @@
+// Prisma schema for Pride Estates (Builder Property Management System)
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String    @id @default(cuid())
+  name      String
+  email     String    @unique
+  password  String
+  phone     String?
+  role      Role      @default(CUSTOMER)
+  bookings  Booking[]
+  createdAt DateTime  @default(now())
+}
+
+enum Role {
+  ADMIN
+  CUSTOMER
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  name        String
+  totalFloors Int
+  status      String   @default("ACTIVE")
+  flats       Flat[]
+  createdAt   DateTime @default(now())
+}
+
+model Flat {
+  id         String     @id @default(cuid())
+  project    Project    @relation(fields: [projectId], references: [id])
+  projectId  String
+  flatNumber String
+  floor      Int
+  type       FlatType
+  basePrice  Float
+  status     FlatStatus @default(AVAILABLE)
+  booking    Booking?
+
+  @@unique([projectId, flatNumber])
+}
+
+enum FlatType {
+  ONE_BED_LAUNCH
+  TWO_BED_LAUNCH
+  TWO_BED_DD
+}
+
+enum FlatStatus {
+  AVAILABLE
+  BOOKED
+  SOLD
+}
+
+model Booking {
+  id              String        @id @default(cuid())
+  flat            Flat          @relation(fields: [flatId], references: [id])
+  flatId          String        @unique
+  customer        User          @relation(fields: [customerId], references: [id])
+  customerId      String
+  totalPrice      Float
+  advanceAmount   Float
+  remainingAmount Float
+  planType        PlanType
+  durationMonths  Int
+  bookingDate     DateTime      @default(now())
+  status          BookingStatus @default(ACTIVE)
+  installments    Installment[]
+  createdAt       DateTime      @default(now())
+}
+
+enum PlanType {
+  MONTHLY
+  HALF_YEARLY
+  HYBRID
+}
+
+enum BookingStatus {
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+model Installment {
+  id         String            @id @default(cuid())
+  booking    Booking           @relation(fields: [bookingId], references: [id])
+  bookingId  String
+  dueDate    DateTime
+  amount     Float
+  type       InstallmentType
+  status     InstallmentStatus @default(PENDING)
+  paidAmount Float             @default(0)
+  paidDate   DateTime?
+  note       String?
+}
+
+enum InstallmentType {
+  ADVANCE
+  MONTHLY
+  HALF_YEARLY
+}
+
+enum InstallmentStatus {
+  PENDING
+  PAID
+  OVERDUE
+}
