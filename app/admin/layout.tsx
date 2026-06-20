@@ -34,6 +34,12 @@ export default async function AdminLayout({
             >
               Projects
             </Link>
+            <Link
+              href="/admin/bookings"
+              className="text-muted-foreground hover:text-foreground"
+            >
+              Bookings
+            </Link>
           </nav>
         </div>
         <form action={signOutAction}>
